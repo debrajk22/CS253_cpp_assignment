@@ -134,18 +134,10 @@ void customer::rent_car()
         return;
     }
 
-    int numbers_of_cars_rented = 0;
     vector<vector<string>> data = readCSV(car::file);
-    for (auto i:data)
+    if (((int)this->record) <= this->number_of_rented_cars)
     {
-        if (i[8] == this->id)
-        {
-            numbers_of_cars_rented++;
-        }
-    }
-    if (((int)this->record) <= numbers_of_cars_rented)
-    {
-        std::cout<<"Your record is "<<this->record<<" and you have presently rented "<<numbers_of_cars_rented<<" cars.\nSo you cannot rent more cars."<<endl;
+        std::cout<<"Your record is "<<this->record<<" and you have presently rented "<<this->number_of_rented_cars<<" cars.\nSo you cannot rent more cars."<<endl;
         std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
         return;
     }
@@ -191,6 +183,19 @@ void customer::rent_car()
                 data[i][8] = this->id;
                 data[i][9] = this->name;
                 modifyRow(car::file, i, data[i]);
+                this->number_of_rented_cars++;
+                
+                vector<vector<string>> customer_data = readCSV(customer::customer_file);
+                for (int j = 0; j < customer_data.size(); ++j)
+                {
+                    if (customer_data[j][0] == this->id)
+                    {
+                        customer_data[j][4] = to_string(this->number_of_rented_cars);
+                        modifyRow(customer::customer_file, j, customer_data[j]);
+                        break;
+                    }
+                }
+
                 flg = 1;
                 break;
             }
@@ -227,7 +232,15 @@ int calculate_fine(string due_date_str)
 
 void customer::return_car()
 {
-    std::cout<<"Enter the ID of the car you want to return: ";
+    if (this->number_of_rented_cars == 0)
+    {
+        std::cout<<"You have not rented any cars"<<endl;
+        std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
+        return;
+    }
+
+    this->show_rented_cars();
+    std::cout<<"You have the above rented cars\nEnter the ID of the car you want to return: ";
     string car_id;
     cin>>car_id;
     std::cout<<endl;
@@ -246,24 +259,28 @@ void customer::return_car()
                 damage = (int) std::min(10.0, std::max(0.0, damage));
 
                 int fine = damage*car::damage_cost + calculate_fine(data[i][6]);
+
                 if (fine > 0)
                 {
                     std::cout<<"You are "<<calculate_fine(data[i][6])/car::fine_per_day<<" days late"<<endl;
                     std::cout<<"Your damage fine is "<<damage*car::damage_cost<<" rupees"<<endl;
                     std::cout<<"You need to pay a fine of "<<fine<<" rupees"<<endl;
                     std::cout<<"This fine has been added to you account"<<endl;
-                    this->fine += fine;
                     this->record--;
-                    vector<vector<string>> customer_data = readCSV(customer::customer_file);
-                    for (int j = 0; j < customer_data.size(); ++j)
-                    {
-                        if (customer_data[j][0] == this->id)
-                        {
-                            customer_data[j][3] = to_string(this->fine);
-                            customer_data[j][4] = to_string(this->record);
-                            modifyRow(customer::customer_file, j, customer_data[j]);
-                            break;
-                        }
+                }
+
+                this->fine += fine;
+                this->number_of_rented_cars--;
+                vector<vector<string>> customer_data = readCSV(customer::customer_file);
+                for (int j = 0; j < customer_data.size(); ++j)
+                {
+                    if (customer_data[j][0] == this->id)
+                    {  
+                        customer_data[j][3] = to_string(this->fine);
+                        customer_data[j][4] = to_string(this->record);
+                        customer_data[j][5] = to_string(this->number_of_rented_cars);
+                        modifyRow(customer::customer_file, j, customer_data[j]);
+                        break;
                     }
                 }
 
@@ -504,7 +521,7 @@ void manager::add_customer()
 
     string id = "c";
     id += to_string(customer::customer_id_count);
-    appendRow(customer::customer_file, {id, name, password, "0", to_string(customer::customer_avg_record), "0"});
+    appendRow(customer::customer_file, {id, name, password, "0", to_string(customer::customer_avg_record), "0", "0"});
     std::cout<<"Customer added successfully"<<endl;
     std::cout<<"The customer ID is "<<id<<endl;
     customer::number_of_customers++;
@@ -526,15 +543,7 @@ void manager::remove_customer()
     {
         if (data[i][0] == customer_id)
         {
-            int count_booked_cars = 0;
-            vector<vector<string>> car_data = readCSV(car::file);
-            for (auto j:car_data)
-            {
-                if (j[8] == customer_id)
-                {
-                    count_booked_cars++;
-                }
-            }
+            int count_booked_cars = stoi(data[i][6]);
             if (count_booked_cars == 0)
             {
                 removeRow(customer::customer_file, i);
@@ -579,25 +588,18 @@ void manager::update_customer()
     {
         if (data[i][0] == customer_id)
         {
-            customer curr_customer(data[i][0], data[i][1], data[i][2], stoi(data[i][3]), stoi(data[i][4]), stoi(data[i][5]));
             std::cout<<"Please enter the updated details of the customer"<<endl;
             std::cout<<"Enter the new name of the customer: ";
-            string name;
-            cin>>name;
+            cin>>data[i][1];
             std::cout<<"Enter the new password of the customer: ";
-            string password;
-            cin>>password;
+            cin>>data[i][2];
             std::cout<<"Enter the updated fine of the customer: ";
-            string fine;
-            cin>>fine;
+            cin>>data[i][3];
             std::cout<<"Enter the updtated record of the customer: ";
-            string record;
-            cin>>record;
+            cin>>data[i][4];
+            std::cout<<"Enter the updated number of cars rented by the customer: ";
+            cin>>data[i][6];
 
-            data[i][1] = name;
-            data[i][2] = password;
-            data[i][3] = fine;
-            data[i][4] = record;
             modifyRow(customer::customer_file, i, data[i]);
             flg = 1;
             std::cout<<"Customer updated successfully"<<endl;
@@ -621,7 +623,7 @@ void manager::add_employee()
 
     string id = "e";
     id += to_string(customer::employee_id_count);
-    appendRow(customer::employee_file, {id, name, password, "0", to_string(customer::employee_avg_record), "15"});
+    appendRow(customer::employee_file, {id, name, password, "0", to_string(customer::employee_avg_record), "15", "0"});
     std::cout<<"Employee added successfully"<<endl;
     std::cout<<"The employee ID is "<<id<<endl;
     customer::number_of_employees++;
@@ -643,15 +645,7 @@ void manager::remove_employee()
     {
         if (data[i][0] == employee_id)
         {
-            int booked_cars = 0;
-            vector<vector<string>> car_data = readCSV(car::file);
-            for (auto j:car_data)
-            {
-                if (j[8] == employee_id)
-                {
-                    booked_cars++;
-                }
-            }
+            int booked_cars = stoi(data[i][6]);
             if (booked_cars == 0)
             {
                 removeRow(customer::employee_file, i);
@@ -685,7 +679,7 @@ void manager::remove_employee()
 
 void manager::update_employee()
 {
-    std::cout<<"Enter the id of the employee you want to update: ";
+    std::cout<<"Enter the ID of the employee you want to update: ";
     string employee_id;
     cin>>employee_id;
     std::cout<<endl;
@@ -696,25 +690,16 @@ void manager::update_employee()
     {
         if (data[i][0] == employee_id)
         {
-            customer curr_employee(data[i][0], data[i][1], data[i][2], stoi(data[i][3]), stoi(data[i][4]), stoi(data[i][5]));
             std::cout<<"Please enter the updated details of the employee"<<endl;
             std::cout<<"Enter the new name of the employee: ";
-            string name;
-            cin>>name;
+            cin>>data[i][1];
             std::cout<<"Enter the new password of the employee: ";
-            string password;
-            cin>>password;
+            cin>>data[i][2];
             std::cout<<"Enter the updated fine of the employee: ";
-            string fine;
-            cin>>fine;
+            cin>>data[i][3];
             std::cout<<"Enter the updtated record of the employee: ";
-            string record;
-            cin>>record;
+            cin>>data[i][4];
 
-            data[i][1] = name;
-            data[i][2] = password;
-            data[i][3] = fine;
-            data[i][4] = record;
             modifyRow(customer::customer_file, i, data[i]);
             flg = 1;
             std::cout<<"Customer updated successfully"<<endl;
@@ -822,7 +807,7 @@ void manager::search_customer_by_id()
         if (i[0] == customer_id)
         {
             flg = 1;
-            std::cout<<"Customer ID: "<<i[0]<<"\tCustomer Name: "<<i[1]<<"\tCustomer Password: "<<i[2]<<"\tCustomer Fine: "<<i[3]<<"\tCustomer Record: "<<i[4]<<endl;
+            std::cout<<"Customer ID: "<<i[0]<<"\tCustomer Name: "<<i[1]<<"\tCustomer Password: "<<i[2]<<"\tCustomer Fine: "<<i[3]<<"\tCustomer Record: "<<i[4]<<"\tNumber of rented cars: "<<i[6]<<endl;
             break;
         }
     }
@@ -845,7 +830,7 @@ void manager::search_customer_by_name()
         if (i[1] == customer_name)
         {
             flg = 1;
-            std::cout<<"Customer ID: "<<i[0]<<"\tCustomer Name: "<<i[1]<<"\tCustomer Password: "<<i[2]<<"\tCustomer Fine: "<<i[3]<<"\tCustomer Record: "<<i[4]<<endl;
+            std::cout<<"Customer ID: "<<i[0]<<"\tCustomer Name: "<<i[1]<<"\tCustomer Password: "<<i[2]<<"\tCustomer Fine: "<<i[3]<<"\tCustomer Record: "<<i[4]<<"\tNumber of cars rented: "<<i[6]<<endl;
         }
     }
     if (!flg) std::cout<<"Customer not found"<<endl;
@@ -867,7 +852,7 @@ void manager::search_employee_by_id()
         if (i[0] == employee_id)
         {
             flg = 1;
-            std::cout<<"Employee ID: "<<i[0]<<"\tEmployee Name: "<<i[1]<<"\tEmployee Password: "<<i[2]<<"\tEmployee Fine: "<<i[3]<<"\tEmployee Record: "<<i[4]<<endl;
+            std::cout<<"Employee ID: "<<i[0]<<"\tEmployee Name: "<<i[1]<<"\tEmployee Password: "<<i[2]<<"\tEmployee Fine: "<<i[3]<<"\tEmployee Record: "<<i[4]<<"\tNumber of cars rented: "<<i[6]<<endl;
             break;
         }
     }
@@ -890,7 +875,7 @@ void manager::search_employee_by_name()
         if (i[1] == employee_name)
         {
             flg = 1;
-            std::cout<<"Employee ID: "<<i[0]<<"\tEmployee Name: "<<i[1]<<"\tEmployee Password: "<<i[2]<<"\tEmployee Fine: "<<i[3]<<"\tEmployee Record: "<<i[4]<<endl;
+            std::cout<<"Employee ID: "<<i[0]<<"\tEmployee Name: "<<i[1]<<"\tEmployee Password: "<<i[2]<<"\tEmployee Fine: "<<i[3]<<"\tEmployee Record: "<<i[4]<<"\tNumber of cars rented: "<<i[6]<<endl;
         }
     }
     if (!flg) std::cout<<"Employee not found"<<endl;
@@ -1150,7 +1135,7 @@ void login_as_customer()
     }
 
     std::cout<<"Hello "<<data[record_number][1]<<"!\n";
-    customer curr_customer(data[record_number][0], data[record_number][1], data[record_number][2], stoi(data[record_number][3]), stoi(data[record_number][4]), stoi(data[record_number][5]));
+    customer curr_customer(data[record_number][0], data[record_number][1], data[record_number][2], stoi(data[record_number][3]), stoi(data[record_number][4]), stoi(data[record_number][5]), stoi(data[record_number][6]));
 
     while (!login_customer_finish)
     {
@@ -1231,13 +1216,13 @@ void login_as_employee()
     }
 
     if (record_number == -1) {
-        std::cout<<"Username not found"<<endl;
+        std::cout<<"UserID not found"<<endl;
         std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
         return;
     }
 
     std::cout<<"Hello "<<data[record_number][1]<<"!\n";
-    customer curr_employee(data[record_number][0], data[record_number][1], data[record_number][2], stoi(data[record_number][3]), stoi(data[record_number][4]), stoi(data[record_number][5]));
+    customer curr_employee(data[record_number][0], data[record_number][1], data[record_number][2], stoi(data[record_number][3]), stoi(data[record_number][4]), stoi(data[record_number][5]), stoi(data[record_number][6]));
     while (!login_employee_finish)
     {
         std::cout<<"What do you want to do?\n1. Show available cars\n2. Show rented cars\n3. Rent a car\n4. Return a car\n5. Show fine\n6. Clear fine\n7. Logout\n";
@@ -1531,7 +1516,7 @@ void signup_customer()
     vector<vector<string>> data = readCSV(customer::customer_file);    
     string id = "c";
     id += to_string(customer::customer_id_count);
-    appendRow(customer::customer_file, {id, username, password, "0", to_string(customer::customer_avg_record), "0"});
+    appendRow(customer::customer_file, {id, username, password, "0", to_string(customer::customer_avg_record), "0", "0"});
     customer::number_of_customers++;
     customer::customer_id_count++;
     std::cout<<"Congratulations! You have successfully signed up as a customer\nYour UserID is "<<id<<endl;
@@ -1550,7 +1535,7 @@ void signup_employee()
     vector<vector<string>> data = readCSV(customer::employee_file);
     string id = "e";
     id += to_string(customer::employee_id_count);
-    appendRow(customer::employee_file, {id, username, password, "0", to_string(customer::employee_avg_record), "15"});
+    appendRow(customer::employee_file, {id, username, password, "0", to_string(customer::employee_avg_record), "15", "0"});
     customer::number_of_employees++;
     customer::employee_id_count++;
     std::cout<<"Congratulations! You have successfully signed up as an employee\nYour UserID is "<<id<<endl;
@@ -1592,6 +1577,7 @@ int main()
     {
         vector<vector<string>> init_data = readCSV(customer::customer_file);
 
+        if (init_data.size()!=0) customer::customer_avg_record = 0;
         for (int i = 0; i < init_data.size(); i++) {
             string id = init_data[i][0];
             for (int j=0;j<id.length()-1;j++) id[j] = id[j+1];
@@ -1602,6 +1588,7 @@ int main()
         }
         if (customer::number_of_customers != 0) customer::customer_avg_record /= customer::number_of_customers;
 
+        if (init_data.size()!=0) customer::employee_avg_record = 0;
         init_data = readCSV(customer::employee_file);
         for (int i = 0; i < init_data.size(); i++) {
             string id = init_data[i][0];
@@ -1623,7 +1610,7 @@ int main()
     }
     catch(const std::exception& e)
     {
-        // std::cerr << e.what() << '\n';
+        // std::cerr 
     }
     
     vector<vector<string>> managers;
