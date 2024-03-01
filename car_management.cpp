@@ -185,13 +185,17 @@ void customer::rent_car()
                 modifyRow(car::file, i, data[i]);
                 this->number_of_rented_cars++;
                 
-                vector<vector<string>> customer_data = readCSV(customer::customer_file);
+                vector<vector<string>> customer_data;
+                if (this->id[0] == 'c') customer_data = readCSV(customer::customer_file);
+                else customer_data = readCSV(customer::employee_file);
+
                 for (int j = 0; j < customer_data.size(); ++j)
                 {
                     if (customer_data[j][0] == this->id)
                     {
-                        customer_data[j][4] = to_string(this->number_of_rented_cars);
-                        modifyRow(customer::customer_file, j, customer_data[j]);
+                        customer_data[j][6] = to_string(this->number_of_rented_cars);
+                        if (this->id[0] == 'c') modifyRow(customer::customer_file, j, customer_data[j]);
+                        else modifyRow(customer::employee_file, j, customer_data[j]);
                         break;
                     }
                 }
@@ -213,21 +217,17 @@ void customer::rent_car()
 
 int calculate_fine(string due_date_str)
 {
-    // Get the current time
-    std::time_t t = std::time(nullptr);
-    std::tm* now = std::localtime(&t);
+    int day1, month1, year1;
+    char ch;
+    stringstream ss(due_date_str);
+    ss >> day1 >> ch >> month1 >> ch >> year1;
+    struct tm t1 = {0, 0, 0, day1, month1-1, year1-1900};
+    time_t time1 = mktime(&t1);
+    time_t now = time(0);
+    double seconds = difftime(now, time1); // now - time1
 
-    std::tm due_date_tm = {0};
-    std::istringstream iss(due_date_str);
-    iss >> std::get_time(&due_date_tm, "%d-%m-%Y");
-    std::time_t due_date_t = std::mktime(&due_date_tm);
-
-    double diff = std::difftime(due_date_t, t) / (60 * 60 * 24);
-    if(diff < 0) {
-        return car::fine_per_day * std::ceil(diff);
-    } else {
-        return 0;
-    }
+    if (seconds <= 0) return 0;
+    else return ( std::ceil(seconds / 86400.0) )* car::fine_per_day;
 }
 
 void customer::return_car()
@@ -267,19 +267,26 @@ void customer::return_car()
                     std::cout<<"You need to pay a fine of "<<fine<<" rupees"<<endl;
                     std::cout<<"This fine has been added to you account"<<endl;
                     this->record--;
+
+                    if (this->id[0] == 'c') customer::customer_avg_record = (customer::customer_avg_record * (customer::number_of_customers - 1) + this->record) / customer::number_of_customers;
+                    else customer::employee_avg_record = (customer::employee_avg_record * (customer::number_of_employees - 1) + this->record) / customer::number_of_employees;
                 }
 
                 this->fine += fine;
                 this->number_of_rented_cars--;
-                vector<vector<string>> customer_data = readCSV(customer::customer_file);
+                vector<vector<string>> customer_data;
+                if (this->id[0] == 'c') customer_data = readCSV(customer::customer_file);
+                else customer_data = readCSV(customer::employee_file);
+
                 for (int j = 0; j < customer_data.size(); ++j)
                 {
                     if (customer_data[j][0] == this->id)
                     {  
                         customer_data[j][3] = to_string(this->fine);
                         customer_data[j][4] = to_string(this->record);
-                        customer_data[j][5] = to_string(this->number_of_rented_cars);
-                        modifyRow(customer::customer_file, j, customer_data[j]);
+                        customer_data[j][6] = to_string(this->number_of_rented_cars);
+                        if (this->id[0] == 'c') modifyRow(customer::customer_file, j, customer_data[j]);
+                        else modifyRow(customer::employee_file, j, customer_data[j]);
                         break;
                     }
                 }
@@ -320,13 +327,17 @@ void customer::clear_fine()
     if (choice == 'y')
     {
         this->fine = 0;
-        vector<vector<string>> data = readCSV(customer::customer_file);
+        vector<vector<string>> data;
+        if (this->id[0] == 'c') data = readCSV(customer::customer_file);
+        else data = readCSV(customer::employee_file);
+
         for (int i = 0; i < data.size(); ++i)
         {
             if (data[i][0] == this->id)
             {
                 data[i][3] = "0";
-                modifyRow(customer::customer_file, i, data[i]);
+                if (this->id[0] == 'c') modifyRow(customer::customer_file, i, data[i]);
+                else modifyRow(customer::employee_file, i, data[i]);
                 break;
             }
         }
@@ -697,12 +708,14 @@ void manager::update_employee()
             cin>>data[i][2];
             std::cout<<"Enter the updated fine of the employee: ";
             cin>>data[i][3];
-            std::cout<<"Enter the updtated record of the employee: ";
+            std::cout<<"Enter the updated record of the employee: ";
             cin>>data[i][4];
+            std::cout<<"Enter the updated number of cars rented by the employee: ";
+            cin>>data[i][6];
 
             modifyRow(customer::customer_file, i, data[i]);
             flg = 1;
-            std::cout<<"Customer updated successfully"<<endl;
+            std::cout<<"Employee updated successfully"<<endl;
             break;
         }
     }
@@ -1373,12 +1386,12 @@ void login_as_manager(vector<vector<string>> &managers)
         case 16:
             curr_manager.update_manager(managers);
             break;
-        case 17:
-            std::cout<<"1. Search by customer ID\n2. Search by customer name\n3. Go Back\n";
-            std::cout<<"Enter your choice: ";
+        case 17:            
             go_back = 0;
             while (!go_back)
             {
+                std::cout<<"1. Search by customer ID\n2. Search by customer name\n3. Go Back\n";
+                std::cout<<"Enter your choice: ";
                 cin>>search_choice;
                 switch (search_choice)
                 {
@@ -1399,11 +1412,11 @@ void login_as_manager(vector<vector<string>> &managers)
             }            
             break;
         case 18:
-            std::cout<<"1. Search by employee ID\n2. Search by employee name\n3. Go Back\n";
-            std::cout<<"Enter your choice: ";
             go_back = 0;
             while (!go_back)
             {
+                std::cout<<"1. Search by employee ID\n2. Search by employee name\n3. Go Back\n";
+                std::cout<<"Enter your choice: ";
                 cin>>search_choice;
                 switch (search_choice)
                 {
@@ -1424,11 +1437,11 @@ void login_as_manager(vector<vector<string>> &managers)
             }
             break;
         case 19:
-            std::cout<<"1. Search by manager ID\n2. Search by manager name\n3. Go Back\n";
-            std::cout<<"Enter your choice: ";
             go_back = 0;
             while (!go_back)
             {
+                std::cout<<"1. Search by manager ID\n2. Search by manager name\n3. Go Back\n";
+                std::cout<<"Enter your choice: ";
                 cin>>search_choice;
                 switch (search_choice)
                 {
@@ -1449,11 +1462,11 @@ void login_as_manager(vector<vector<string>> &managers)
             }
             break;
         case 20:
-            std::cout<<"1. Search by car ID\n2. Search by car name\n3. Search by car model\n4. Search by car color\n5. Search by car condition\n6. Search by renter ID\n7. Search by renter name\n8. Go Back\n";
-            std::cout<<"Enter your choice: ";
             go_back = 0;
             while (!go_back)
             {
+                std::cout<<"1. Search by car ID\n2. Search by car name\n3. Search by car model\n4. Search by car color\n5. Search by car condition\n6. Search by renter ID\n7. Search by renter name\n8. Go Back\n";
+                std::cout<<"Enter your choice: ";
                 cin>>search_choice;
                 switch (search_choice)
                 {
@@ -1559,7 +1572,7 @@ int manager::manager_id_count = 0;
 int car::car_id_count = 0;
 int car::cost_per_day = 1000;
 int car::fine_per_day = 1200;
-int car::damage_cost = 100;
+int car::damage_cost = 200;
 
 int main()
 {
@@ -1586,10 +1599,15 @@ int main()
             customer::customer_avg_record += stoi(init_data[i][4]);
             customer::number_of_customers++;
         }
-        if (customer::number_of_customers != 0) customer::customer_avg_record /= customer::number_of_customers;
+        
+        if (customer::number_of_customers != 0)
+        {
+            customer::customer_id_count++;
+            customer::customer_avg_record /= customer::number_of_customers;
+        }
 
-        if (init_data.size()!=0) customer::employee_avg_record = 0;
         init_data = readCSV(customer::employee_file);
+        if (init_data.size()!=0) customer::employee_avg_record = 0;
         for (int i = 0; i < init_data.size(); i++) {
             string id = init_data[i][0];
             for (int j=0;j<id.length()-1;j++) id[j] = id[j+1];
@@ -1598,15 +1616,20 @@ int main()
             customer::employee_avg_record += stoi(init_data[i][4]);
             customer::number_of_employees++;
         }
-        if (customer::number_of_employees != 0) customer::employee_avg_record /= customer::number_of_employees;
+        if (customer::number_of_employees != 0)
+        {
+            customer::employee_id_count++;
+            customer::employee_avg_record /= customer::number_of_employees;
+        }
 
         init_data = readCSV(car::file);
         for (int i = 0; i < init_data.size(); i++) {
             string id = init_data[i][0];
-            for (int j=0;j<id.length()-1;j++) id[j] = id[j+1];
+            for (int j=0;j<id.length()-3;j++) id[j] = id[j+3];
             id.pop_back();
             car::car_id_count = max(car::car_id_count, stoi(id));
         }
+        if (init_data.size()!=0) car::car_id_count++;
     }
     catch(const std::exception& e)
     {

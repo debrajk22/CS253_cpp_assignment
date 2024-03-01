@@ -43,7 +43,7 @@ class user
         string id, name, password;
 };
 
-class customer: public user  // id, name, password, fine, record, discount
+class customer: public user  // id, name, password, fine, record, discount, number_of_rented_cars
 {
     public:
         int record;
