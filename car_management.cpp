@@ -293,7 +293,8 @@ void customer::return_car()
 
                 std::cout<<"Car returned successfully"<<endl;
                 data[i][5] = "0";
-                data[i][6] = to_string((int) damage);
+                data[i][6] = "0";
+                data[i][7] = to_string((int) damage);
                 data[i][8] = "0";
                 data[i][9] = "0";
                 modifyRow(car::file, i, data[i]);
@@ -353,6 +354,12 @@ void customer::clear_fine()
     }
     std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
     return;
+}
+
+void customer::view_profile()
+{
+    std::cout<<"Your ID: "<<this->id<<"\tYour Name: "<<this->name<<"\tYour Password: "<<this->password<<"\tYour Fine: "<<this->fine<<"\tYour Record: "<<this->record<<"\tYour Number of Rented Cars: "<<this->number_of_rented_cars<<endl;
+    std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
 }
 
 void manager::show_all_cars()
@@ -1152,7 +1159,7 @@ void login_as_customer()
 
     while (!login_customer_finish)
     {
-        std::cout<<"What do you want to do?\n1. Show available cars\n2. Show rented cars\n3. Rent a car\n4. Return a car\n5. Show fine\n6. Clear fine\n7. Logout\n";
+        std::cout<<"What do you want to do?\n1. Show available cars\n2. Show rented cars\n3. Rent a car\n4. Return a car\n5. Show fine\n6. Clear fine\n7. View profile\n8. Logout\n";
         std::cout<<"Enter your choice: ";
         int login_choice;
         cin>>login_choice;
@@ -1186,6 +1193,10 @@ void login_as_customer()
             break;
 
         case 7:
+            curr_customer.view_profile();
+            break;
+
+        case 8:
             std::cout<<"You are successfully logged out"<<endl;
             std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
             login_customer_finish = 1;
@@ -1238,7 +1249,7 @@ void login_as_employee()
     customer curr_employee(data[record_number][0], data[record_number][1], data[record_number][2], stoi(data[record_number][3]), stoi(data[record_number][4]), stoi(data[record_number][5]), stoi(data[record_number][6]));
     while (!login_employee_finish)
     {
-        std::cout<<"What do you want to do?\n1. Show available cars\n2. Show rented cars\n3. Rent a car\n4. Return a car\n5. Show fine\n6. Clear fine\n7. Logout\n";
+        std::cout<<"What do you want to do?\n1. Show available cars\n2. Show rented cars\n3. Rent a car\n4. Return a car\n5. Show fine\n6. Clear fine\n7. View profile\n8. Logout\n";
         std::cout<<"Enter your choice: ";
         int login_choice;
         cin>>login_choice;
@@ -1272,6 +1283,10 @@ void login_as_employee()
             break;
 
         case 7:
+            curr_employee.view_profile();
+            break;
+
+        case 8:
             std::cout<<"You are successfully logged out"<<endl;
             std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
             login_employee_finish = 1;
@@ -1554,4 +1569,188 @@ void signup_employee()
     std::cout<<"Congratulations! You have successfully signed up as an employee\nYour UserID is "<<id<<endl;
     std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
     return;
+}
+
+string customer::customer_file = "customer.csv"; // id, name, password, fine, record, discount, number_of_cars_rented
+string customer::employee_file = "employee.csv"; // id, name, password, fine, record, discount, number_of_cars_rented
+string car::file = "car.csv"; // id, name, model, color, condition, is_booked, due_date, damage, renter_id, renter_name
+
+int customer::customer_avg_record = 5;
+int customer::number_of_customers = 0;
+int customer::customer_id_count = 0;
+
+int customer::employee_avg_record = 5;
+int customer::number_of_employees = 0;
+int customer::employee_id_count = 0;
+
+int manager::manager_id_count = 0;
+int car::car_id_count = 0;
+int car::cost_per_day = 1000;
+int car::fine_per_day = 1200;
+int car::damage_cost = 200;
+
+int main()
+{
+    if (!fileExists(customer::customer_file)) {
+        ofstream file(customer::customer_file);
+    }
+    if (!fileExists(customer::employee_file)) {
+        ofstream file(customer::employee_file);
+    }
+    if (!fileExists(car::file)) {
+        ofstream file(car::file);
+    }
+
+    try
+    {
+        vector<vector<string>> init_data = readCSV(customer::customer_file);
+
+        if (init_data.size()!=0) customer::customer_avg_record = 0;
+        for (int i = 0; i < init_data.size(); i++) {
+            string id = init_data[i][0];
+            for (int j=0;j<id.length()-1;j++) id[j] = id[j+1];
+            id.pop_back();
+            customer::customer_id_count = max(customer::customer_id_count, stoi(id));
+            customer::customer_avg_record += stoi(init_data[i][4]);
+            customer::number_of_customers++;
+        }
+        
+        if (customer::number_of_customers != 0)
+        {
+            customer::customer_id_count++;
+            customer::customer_avg_record /= customer::number_of_customers;
+        }
+
+        init_data = readCSV(customer::employee_file);
+        if (init_data.size()!=0) customer::employee_avg_record = 0;
+        for (int i = 0; i < init_data.size(); i++) {
+            string id = init_data[i][0];
+            for (int j=0;j<id.length()-1;j++) id[j] = id[j+1];
+            id.pop_back();
+            customer::employee_id_count = max(customer::employee_id_count, stoi(id));
+            customer::employee_avg_record += stoi(init_data[i][4]);
+            customer::number_of_employees++;
+        }
+        if (customer::number_of_employees != 0)
+        {
+            customer::employee_id_count++;
+            customer::employee_avg_record /= customer::number_of_employees;
+        }
+
+        init_data = readCSV(car::file);
+        for (int i = 0; i < init_data.size(); i++) {
+            string id = init_data[i][0];
+            for (int j=0;j<id.length()-3;j++) id[j] = id[j+3];
+            id.pop_back();
+            car::car_id_count = max(car::car_id_count, stoi(id));
+        }
+        if (init_data.size()!=0) car::car_id_count++;
+    }
+    catch(const std::exception& e)
+    {
+        // std::cerr 
+    }
+    
+    vector<vector<string>> managers;
+    managers.push_back({"m0","manager", "123456"});
+    manager::manager_id_count++;
+
+    std::cout<<endl<<"-------------------------- Welcome to the Car Rental System --------------------------"<<endl<<endl;
+    // std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
+
+    int finish = 0;
+    int sign_up_finish = 0;
+    int login_finish = 0;
+    int login_customer_finish = 0;
+
+    while (!finish)
+    {
+        std::cout<<"1. Login\n2. Sign up\n3. Exit\nPlease enter your choice: ";
+        int choice;
+        cin>>choice;
+        std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
+        
+        switch (choice)
+        {
+        case 1: // Login
+            login_finish = 0;
+            while (!login_finish)
+            {
+                std::cout<<"1. Login as a customer\n2. Login as an employee\n3. Login as a manager\n4. Go back\n";
+                std::cout<<"Please enter your choice: ";
+                int subchoice;
+                cin>>subchoice;
+                std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
+
+                switch (subchoice)
+                {
+                case 1: // Login as a customer
+                    login_as_customer();
+                    break;
+
+                case 2:
+                    login_as_employee();
+                    break;
+
+                case 3:
+                    login_as_manager(managers);
+                    break;
+
+                case 4:
+                    login_finish = 1;
+                    break;
+                
+                default:
+                    std::cout<<"Invalid choice. Please enter a valid choice\n"<<endl;
+                    std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
+                    break;
+                }
+            }
+            break;
+
+        case 2: // Sign up
+            sign_up_finish = 0;
+            while (!sign_up_finish)
+            {
+                std::cout<<"1. Signup as a customer\n2. Signup as an employee\n3. Go back\n";
+                std::cout<<"Please enter your choice: ";
+                int subchoice;
+                cin>>subchoice;
+                std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
+                
+                switch (subchoice)
+                {
+                case 1: // Signup as a customer
+                    signup_customer();
+                    break;
+
+                case 2:  // Signup as an employee
+                    signup_employee();
+                    break;
+
+                case 3:
+                    sign_up_finish = 1;
+                    break;
+                
+                default:
+                    std::cout<<"Invalid choice. Please enter a valid choice\n";
+                    std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
+                    break;
+                }
+            }
+
+            break;
+
+        case 3:
+            finish = 1;
+            std::cout<<"Thank you for using the Car Rental System\n\n";
+            break;
+        
+        default:
+            std::cout<<"Invalid choice. Please enter a valid choice\n";
+            std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
+            break;
+        }
+    }
+    return 0;
 }

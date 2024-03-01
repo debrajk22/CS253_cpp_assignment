@@ -72,6 +72,7 @@ class customer: public user  // id, name, password, fine, record, discount, numb
         void rent_car();
         void return_car();
         void clear_fine();
+        void view_profile();
 };
 
 class manager: public user
