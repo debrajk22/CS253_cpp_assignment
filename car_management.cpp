@@ -578,7 +578,7 @@ void manager::update_customer()
             cin>>data[i][2];
             std::cout<<"Enter the updated fine of the customer: ";
             cin>>data[i][3];
-            std::cout<<"Enter the updtated record of the customer: ";
+            std::cout<<"Enter the updated record of the customer: ";
             cin>>data[i][4];
             std::cout<<"Enter the updated number of cars rented by the customer: ";
             cin>>data[i][6];
