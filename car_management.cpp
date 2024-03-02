@@ -417,25 +417,9 @@ void manager::show_all_managers(vector<vector<string>> &managers)
     return;
 }
 
-void manager::add_car()
+void car::add_car()
 {
-    std::cout<<"Enter the name of the car: ";
-    string name;
-    cin>>name;
-    std::cout<<"Enter the model of the car: ";
-    string model;
-    cin>>model;
-    std::cout<<"Enter the color of the car: ";
-    string color;
-    cin>>color;
-    std::cout<<"Enter the condition of the car: ";
-    string condition;
-    cin>>condition;
-    std::cout<<endl;
-
-    string id = "car";
-    id += to_string(car::car_id_count);
-    appendRow(car::file, {id, name, model, color, condition, "0", "0", "0", "0", "0"});
+    appendRow(car::file, {this->id, this->name, this->model, this->color, this->condition, "0", "0", "0", "0", "0"});
     car::car_id_count++;
     std::cout<<"Car added successfully"<<endl;
     std::cout<<"The car ID is "<<id<<endl;
@@ -443,48 +427,32 @@ void manager::add_car()
     return;
 }
 
-void manager::remove_car()
+void car::remove_car()
 {
-    std::cout<<"Enter the ID of the car you want to remove: ";
-    string car_id;
-    cin>>car_id;
-    std::cout<<endl;
-
     vector<vector<string>> data = readCSV(car::file);
-    int flg = 0;
     for (int i = 0; i < data.size(); ++i)
     {
-        if (data[i][0] == car_id && data[i][5] == "0")
+        if (data[i][0] == this->id && data[i][5] == "0")
         {
             removeRow(car::file, i);
-            flg = 1;
             std::cout<<"Car removed successfully"<<endl;
             break;
         }
-        else if (data[i][0] == car_id && data[i][5] == "1")
+        else if (data[i][0] == this->id && data[i][5] == "1")
         {
             std::cout<<"Car is presently rented. So it cannot be removed"<<endl;
-            flg = 1;
             break;
         }
     }
-    if (!flg) std::cout<<"Car not found"<<endl;
-    std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
     return;
 }
 
-void manager::update_car()
+void car::update_car()
 {
-    std::cout<<"Enter the ID of the car you want to update: ";
-    string car_id;
-    cin>>car_id;
-    std::cout<<endl;
-
     vector<vector<string>> data = readCSV(car::file);
-    int flg = 0;
     for (int i = 0; i < data.size(); ++i)
     {
-        if (data[i][0] == car_id && data[i][5] == "0")
+        if (data[i][0] == this->id && data[i][5] == "0")
         {
             car curr_car(data[i][0], data[i][1], data[i][2], data[i][3], data[i][4], stoi(data[i][5]), stoi(data[i][6]), stoi(data[i][7]), data[i][8], data[i][9]);
             std::cout<<"Please enter the updated details of the car"<<endl;
@@ -511,19 +479,15 @@ void manager::update_car()
             data[i][8] = curr_car.renter_id;
             data[i][9] = curr_car.renter_name;
             modifyRow(car::file, i, data[i]);
-            flg = 1;
             std::cout<<"Car updated successfully"<<endl;
             break;
         }
-        else if (data[i][0] == car_id && data[i][5] == "1")
+        else if (data[i][0] == this->id && data[i][5] == "1")
         {
             std::cout<<"Car is presently rented. So it cannot be updated"<<endl;
-            flg = 1;
             break;
         }
     }
-    if (!flg) std::cout<<"Car not found"<<endl;
-    std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
     return;
 }
 
@@ -1351,7 +1315,10 @@ void login_as_manager(vector<vector<string>> &managers)
         int login_choice;
         cin>>login_choice;
         std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
-        int search_choice, go_back = 0;
+        int search_choice, go_back = 0, flg;
+        string name, model, color, condition, car_id;
+        vector<vector<string>> data;
+        car curr_car("", "", "", "", "", 0, 0, 0, "", "");
 
         switch (login_choice)
         {
@@ -1368,13 +1335,60 @@ void login_as_manager(vector<vector<string>> &managers)
             curr_manager.show_all_managers(managers);
             break;
         case 5:
-            curr_manager.add_car();
+            std::cout<<"Enter the name of the car: ";
+            cin>>name;
+            std::cout<<"Enter the model of the car: ";
+            cin>>model;
+            std::cout<<"Enter the color of the car: ";
+            cin>>color;
+            std::cout<<"Enter the condition of the car: ";
+            cin>>condition;
+            std::cout<<endl;
+
+            car_id = "car";
+            car_id += to_string(car::car_id_count);
+            curr_car.set_val(car_id, name, model, color, condition, 0, 0, 0, "0", "0");
+            curr_car.add_car();
             break;
         case 6:
-            curr_manager.remove_car();
+            std::cout<<"Enter the ID of the car you want to remove: ";
+            cin>>car_id;
+            std::cout<<endl;
+
+            data = readCSV(car::file);
+            flg = 0;
+            for (int i = 0; i < data.size(); ++i)
+            {
+                if (data[i][0] == car_id)
+                {
+                    curr_car.set_val(data[i][0], data[i][1], data[i][2], data[i][3], data[i][4], stoi(data[i][5]), stoi(data[i][6]), stoi(data[i][7]), data[i][8], data[i][9]);
+                    curr_car.remove_car();
+                    flg = 1;
+                    break;
+                }
+            }
+            if (!flg) std::cout<<"Car not found"<<endl;
+            std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
             break;
         case 7:
-            curr_manager.update_car();
+            std::cout<<"Enter the ID of the car you want to update: ";
+            cin>>car_id;
+            std::cout<<endl;
+
+            data = readCSV(car::file);
+            flg = 0;
+            for (int i = 0; i < data.size(); ++i)
+            {
+                if (data[i][0] == car_id)
+                {
+                    curr_car.set_val(data[i][0], data[i][1], data[i][2], data[i][3], data[i][4], stoi(data[i][5]), stoi(data[i][6]), stoi(data[i][7]), data[i][8], data[i][9]);
+                    curr_car.update_car();
+                    flg = 1;
+                    break;
+                }
+            }
+            if (!flg) std::cout<<"Car not found"<<endl;
+            std::cout<<endl<<"--------------------------------------------------------------------------------------"<<endl<<endl;
             break;
         case 8:
             curr_manager.add_customer();

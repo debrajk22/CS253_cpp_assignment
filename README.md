@@ -6,7 +6,7 @@ There are 3 csv files namely car.csv, customer.csv and employee.csv that stores 
 
 Initially, the csv files contains 5 cars, 5 customers (Eg: userID c0 has password 123) and 5 employees (Eg: userID e0 has password 123). The program initially begins with one manager with **ID: m0, Name: manager, Password: 123**. Other managers can be added in runtime but since they are not stored in a database or file, record of managers initiates with the above whenever the program is restarted.
 
-This is an Object Oriented Program that has a car class, a user class, a manager and a customer class. The manager an customer class are derived from the user class. Due to similar operations of employees and customers, they have been implemented using the same customer class.
+This is an Object Oriented Program that has a car class, a user class, a manager and a customer class. The manager an customer class are derived from the user class. Due to similar operations of employees and customers, they have been implemented using the same customer class. ID, name and password of a users and ID and name of cars are set as protected and private variables respectively.
 
 The code for the software has been written in two cpp files namely:
 1. classes.cpp : contains the definition of the classes and the functions associated with the classes
@@ -19,7 +19,7 @@ To run the program, we have to run the car_management.cpp file.
 3. **Customer class (derived from user class):** ID, Name, Password, Fine, Record, Discount (0% for customer and 15% for employee), Number_of_rented_cars
 4. **Manager class (derived from user class):** ID, Name, Password
 
-The record of the customer/employee is an integer between 0 to 5. A person's record decreases by 1 when he returns a car after the due date. It also denotes the maximum number of cars that can be rented by a customer/employee. A new customer's or employee's record is set to the average record of customers or employees respectively.
+The record of the customer/employee is an integer between 0 to 5. A person's record decreases by 1 when he returns a car after the due date or caused some damage to the car. It also denotes the maximum number of cars that can be rented by a customer/employee. A new customer's or employee's record is set to the average record of customers or employees respectively.
 
 ## Functions available in the car rental system:
 ### Manager:
@@ -66,4 +66,4 @@ Since employee and customer have been implemented by the same class, both have t
 While signing up, one has to give his name and password and the system generates a unique userID and displays it. While logging in, one has to give his UserID (Eg: c0 or e0 or m0) and password that is verified and the action proceeds. After signing up, the employee or customer is given a unique ID. The maneger, customer or employee can access the functions of the program once he/she has logged in.
 
 ### Testing the fine system:
-The fine system gives a fine to user if there is a damage in the car (₹200 per damage) or if the user return the car after the due date (₹1200 per late day). For testing the late return fine feature, we can manually change the due date of a car (in format dd-mm-yyyy) in 'car.csv' if the car is booked for a user and then try returning the car from that user. The fine will be added to the fine of the user.
+The fine system gives a fine to user if there is a damage in the car (₹200 per damage) or if the user return the car after the due date (₹1200 per late day). For testing the late return fine feature, we can manually change the due date of a car (in format dd-mm-yyyy) in 'car.csv' after booking the car for a user and then try returning the car from that user. The fine will be added to the fine of the user.

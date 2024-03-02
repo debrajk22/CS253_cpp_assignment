@@ -35,6 +35,23 @@ class car  // id, name, model, color, condition, is_booked, due_date, damage, re
             this->renter_id = renter_id;
             this->renter_name = renter_name;
         }
+
+        void set_val(string id, string name, string model, string color, string condition, int is_booked, int due_date, int damage, string renter_id, string renter_name)
+        {
+            this->id = id;
+            this->name = name;
+            this->model = model;
+            this->color = color;
+            this->condition = condition;
+            this->is_booked = is_booked;
+            this->due_date = due_date;
+            this->damage = damage;
+            this->renter_id = renter_id;
+            this->renter_name = renter_name;
+        }
+        void add_car();
+        void remove_car();
+        void update_car();
 };
 
 class user
@@ -89,9 +106,7 @@ class manager: public user
         void show_all_customers();
         void show_all_employees();
         void show_all_managers(vector<vector<string>> &managers);
-        void add_car();
-        void remove_car();
-        void update_car();
+
         void add_customer();
         void remove_customer();
         void update_customer();
