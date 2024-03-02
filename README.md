@@ -14,12 +14,12 @@ The code for the software has been written in two cpp files namely:
 To run the program, we have to run the car_management.cpp file.
 
 ## Attributes of the classes:
-**Car class:** ID, Name, Model, Color, Condition, Is_booked, Due_date, Damage, Renter_ID, Renter_name
-**User class:** ID, Name, Password
-**Customer class (derived from user class):** ID, Name, Password, Fine, Record, Discount (0% for customer and 15% for employee), Number_of_rented_cars
-**Manager class (derived from user class):** ID, Name, Password
+1. **Car class:** ID, Name, Model, Color, Condition, Is_booked, Due_date, Damage, Renter_ID, Renter_name
+2. **User class:** ID, Name, Password
+3. **Customer class (derived from user class):** ID, Name, Password, Fine, Record, Discount (0% for customer and 15% for employee), Number_of_rented_cars
+4. **Manager class (derived from user class):** ID, Name, Password
 
-The record of the customer/employee is an integer between 0 to 5. A person's record decreases by 1 when he returns a car after the due date. It also denotes the maximum number of cars that can be rented by a customer/employee.
+The record of the customer/employee is an integer between 0 to 5. A person's record decreases by 1 when he returns a car after the due date. It also denotes the maximum number of cars that can be rented by a customer/employee. A new customer's or employee's record is set to the average record of customers or employees respectively.
 
 ## Functions available in the car rental system:
 ### Manager:
