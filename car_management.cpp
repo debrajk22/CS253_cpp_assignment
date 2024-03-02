@@ -578,6 +578,7 @@ void manager::remove_customer()
                 {
                     removeRow(customer::customer_file, i);
                     std::cout<<"Customer removed successfully"<<endl;
+                    customer::number_of_customers--;
                 }
                 else
                 {
@@ -680,6 +681,7 @@ void manager::remove_employee()
                 {
                     removeRow(customer::employee_file, i);
                     std::cout<<"Employee removed successfully"<<endl;
+                    customer::number_of_employees--;
                 }
                 else
                 {

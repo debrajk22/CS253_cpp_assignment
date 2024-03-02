@@ -48,7 +48,7 @@ The record of the customer/employee is an integer between 0 to 5. A person's rec
 ### Customer:
 1. Show available cars
 2. Show rented cars
-3. Rent a car - asks for the number of days you want to rent the car for and updates the parameters accordingly in csv files
+3. Rent a car - asks for the number of days you want to rent the car for and updates the parameters accordingly in csv files. Calculates the fare of these days and displays it.
 4. Return a car - checks the due date and asks for any damage in the car
 5. Show fine
 6. Clear fine
@@ -63,7 +63,7 @@ Since employee and customer have been implemented by the same class, both have t
 2. Signup: gives 3 signup options namely - signup as customer and signup as employee
 3. Exit: Exits the program
 
-While logging in and signing up, one has to give his UserID (Eg: c0 or e0 or m0) and password that is verified and the action proceeds. After signing up, the employee or customer is given a unique ID. The maneger, customer or employee can access the functions of the program once he/she has logged in.
+While signing up, one has to give his name and password and the system generates a unique userID and displays it. While logging in, one has to give his UserID (Eg: c0 or e0 or m0) and password that is verified and the action proceeds. After signing up, the employee or customer is given a unique ID. The maneger, customer or employee can access the functions of the program once he/she has logged in.
 
 ### Testing the fine system:
-The fine system gives a fine to user if there is a damage in the car (₹200 per damage) or if the user return the car after the due date (₹1200 per late day). For testing the late return fine feature, we can manually change the due date of a car (in format dd-mm-yyyy) if the car is booked for a user and then try returning the car from that user. The fine will be added to the fine of the user.
+The fine system gives a fine to user if there is a damage in the car (₹200 per damage) or if the user return the car after the due date (₹1200 per late day). For testing the late return fine feature, we can manually change the due date of a car (in format dd-mm-yyyy) in 'car.csv' if the car is booked for a user and then try returning the car from that user. The fine will be added to the fine of the user.
