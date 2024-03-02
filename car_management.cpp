@@ -1652,7 +1652,7 @@ int main()
     }
     
     vector<vector<string>> managers;
-    managers.push_back({"m0","manager", "123456"});
+    managers.push_back({"m0","manager", "123"});
     manager::manager_id_count++;
 
     std::cout<<endl<<"-------------------------- Welcome to the Car Rental System --------------------------"<<endl<<endl;
