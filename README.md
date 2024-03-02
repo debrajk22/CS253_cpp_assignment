@@ -48,7 +48,7 @@ The record of the customer/employee is an integer between 0 to 5. A person's rec
 ### Customer:
 1. Show available cars
 2. Show rented cars
-3. Rent a car - asks for the number of days you want to rent the car for and updates the parameters accordingly in csv files. Calculates the fare of these days and displays it.
+3. Rent a car - asks for the number of days you want to rent the car for and updates the parameters accordingly in csv files. Calculates the fare (₹1000 per day) of these days and displays it.
 4. Return a car - checks the due date and asks for any damage in the car
 5. Show fine
 6. Clear fine
@@ -60,7 +60,7 @@ Since employee and customer have been implemented by the same class, both have t
 ## Structure of the Program:
 ### Starting options:
 1. Login: gives 3 login options namely - login as customer, login as employee and login as manager
-2. Signup: gives 3 signup options namely - signup as customer and signup as employee
+2. Signup: gives 2 signup options namely - signup as customer and signup as employee
 3. Exit: Exits the program
 
 While signing up, one has to give his name and password and the system generates a unique userID and displays it. While logging in, one has to give his UserID (Eg: c0 or e0 or m0) and password that is verified and the action proceeds. After signing up, the employee or customer is given a unique ID. The maneger, customer or employee can access the functions of the program once he/she has logged in.
